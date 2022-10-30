@@ -1,0 +1,30 @@
+{
+    "manifest_version": 3,
+    "name": "proKite",
+    "description": "Extension for Zerodha's kite trading platform",
+    "version": "1.0.0",
+    "author": "Jitendra Pal",
+    
+    "action":{
+        "default_title": "proKite"
+    },
+    "background":{
+        "service_worker": "background.js"
+    },
+    "devtools_page": "devtools.html",
+    "host_permissions":["https://*.zerodha.com/*"],
+    "homepage_url": "https://threej.in",
+    "icons": {
+        "16": "img/icon16.png",
+        "32": "img/icon32.png",
+        "48": "img/icon48.png",
+        "128": "img/icon128.png"
+    },
+
+    "permissions": [
+        "tabs",
+        "activeTab",
+        "scripting",
+        "storage"
+    ]
+}

@@ -1,0 +1,26 @@
+div#prokite{
+    position: fixed;
+    bottom: 0;
+    right: 0;
+}
+div#prokite > ul{
+    list-style-type: none;
+    display: flex;
+    background: white;
+    padding: 0;
+    margin: 0;
+    border: 1px solid lightgrey;
+}
+
+div#prokite > ul > li{ 
+    margin: 0!important;
+    padding: 5px 10px;
+}
+
+div#prokite li.active{
+    background: rgb(220, 0, 0, 0.1);
+}
+
+div#prokite > ul > li > img{ 
+    width: 30px;
+}
