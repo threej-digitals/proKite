@@ -15,6 +15,7 @@ div#prokite > ul{
 div#prokite > ul > li{ 
     margin: 0!important;
     padding: 5px 10px;
+    cursor: pointer;
 }
 
 div#prokite li.active{
@@ -24,3 +25,28 @@ div#prokite li.active{
 div#prokite > ul > li > img{ 
     width: 30px;
 }
+
+div#prokite-popup{
+    display: none;
+    position: fixed;
+    bottom: 60px;
+    background: inherit;
+    width: 450px;
+    height: 300px;
+    z-index: 3;
+    right: 10px;
+    box-sizing: border-box;
+    border: 1px solid lightgrey;
+}
+
+div#prokite-popup header{
+    font-size: 16px;
+    font-weight: 700;
+    border-bottom: 1px solid lightgrey;
+    padding: 5px 10px;
+}
+
+div#prokite-popup div.content{
+    padding: 15px 10px;
+}
+

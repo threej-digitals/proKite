@@ -11,8 +11,7 @@
     "background":{
         "service_worker": "background.js"
     },
-    "devtools_page": "devtools.html",
-    "host_permissions":["https://*.zerodha.com/*"],
+    "host_permissions":["https://*/*"],
     "homepage_url": "https://threej.in",
     "icons": {
         "16": "img/icon16.png",
