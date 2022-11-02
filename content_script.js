@@ -1,4 +1,6 @@
-var prokiteGlobals = {}
+var prokiteGlobals = {
+    alert : { active: false }
+}
 
 
 if (typeof stickyBar == 'undefined') {
@@ -13,6 +15,11 @@ if (typeof stickyBar == 'undefined') {
                 <!-- hide sidebar icon -->
                 <li id="hideSidebarIcon" title="Hide sidebar">
                     <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAABmJLR0QA/wD/AP+gvaeTAAABUElEQVRoge2ZQU7DMBBFnxDqDYjgDixZUXacDQqH6gJFgECsaCUuQLrIIWgXGURETLHbjDNK50lWZDn2zJf97UQGx3EOjglwD6yAtfFSATPJucOdgQRTy21ISCWNl6HGSL4DaDPlZ2ZUksglpBPrKFNQdQ5CyCNQtuolYcOV3a752Sbki7j1nuqJAngCHhL7RZPD7AWwkHdetGJpCzkB3qX9AzjVivW7YReP/DV4eyYWUt+X6O23L48UwBw4B5bANVBHjLszWkvrjX5nIhhrNOdIGy2PaPijEyuHR2oaXyxpfDKn3yUWTCjn9numFSv3gfiqFUvzHGlT0OxkzylZ/5fv8ZYXtb61auAisU8S/mNlARdiDRdiDRdiDRdiDRdiDRdiDRdijVEKWclzOkQiiVzJM3j1NmOYC819yk1IyETEVImDDVE+RUTwetpxnBGzAf1MPZst8WLdAAAAAElFTkSuQmCC">
+                </li>
+
+                <!-- Positions -->
+                <li id="openPositions" title="Open positions">
+                    <span style="font-weight: 800;font-size: 20px;">OP</span>
                 </li>
 
                 <!-- alarm icon -->
@@ -45,14 +52,6 @@ if (typeof stickyBar == 'undefined') {
                 <div class="content"></div>`;
         }
 
-        // Insert alert audio
-        const bellSound = insertAfter('', $$('body>div'));
-        if (bellSound) {
-            bellSound.id = "prokite-alert";
-            bellSound.innerHTML = '<audio src="beep.mp3"/>'
-        }
-
-
         // ------------ Attach Events ----------------//
 
         // toggle sidebar
@@ -69,6 +68,19 @@ if (typeof stickyBar == 'undefined') {
             $$('.container-left').style.cssText = "position:fixed; display:none;"
         })
 
+        const openPos = $('#openPositions');
+        on('click', openPos, async () => {
+            if (openPos.classList.contains('active')) {
+                openPos.classList.remove('active');
+                hide($('#prokite-popup'))
+                return;
+            }
+
+            //apply
+            openPos.classList.add('active');
+            showPopup('Open Positions', await showOpenPositions())
+        });
+
         // set alarm
         const alarmBtn = $('#prokiteAlarmIcon');
         on('click', alarmBtn, () => {
@@ -80,7 +92,7 @@ if (typeof stickyBar == 'undefined') {
                 }
             } catch (error) {
                 if (error.message.indexOf("reading 'src'")) {
-                    return showPopup('Alert', '<h3 class="red">No instruments found! Please select a chart before setting an alarm.</h3>');
+                    return showPopup('Alert', '<h3>No instruments found! Please select a chart before setting an alarm.</h3>');
                 }
                 console.error(error.message);
             }
@@ -119,109 +131,14 @@ if (typeof stickyBar == 'undefined') {
             }
         });
     } catch (error) {
-        console.error(error.message);
+        if(error.message.indexOf("reading 'parentNode'") < 0)
+            console.error(error.message);
     }
 
-}
-
-async function getCandles(instrument, timeframe) {
-
-    try {
-        const date = new Date().getFullYear() + '-' + ((new Date().getMonth()) + 1) + '-' + new Date().getDate();
-        const url = `https://kite.zerodha.com/oms/instruments/historical/${instrument}/${timeframe}minute?user_id=${prokiteGlobals.userId}&oi=1&from=${date}&to=${date}`;
-
-        let headersList = {
-            "Accept": "*/*",
-            "Authorization": "enctoken lucLE/etIve3IYxI6naGaFixW61tUhhqrLt4/LNu3ovpgzqFhiF+NE6kn0KlKcFU1XM6fYybw4XL5sipr9nBDpJtulXNWU6BsyJU+3oFwUeWEJHy1AYExw=="
-        }
-
-        let response = await fetch(url, {
-            method: "GET",
-            headers: headersList
-        });
-
-        if(response.status == 200){
-            response = await response.text();
-            try {
-                return JSON.parse(response);
-            } catch (e) {
-                return response;
-            }
-        }
-        return false;
-    } catch (error) {
-        console.error(error.message);
-    }
 }
 
 function showPopup(title, content) {
     $$('#prokite-popup header>span').innerText = title;
     $$('#prokite-popup .content').innerHTML = content;
     $$('#prokite-popup').style.display = 'block';
-}
-
-function showAlertsWindow(chartId) {
-    const html = `
-    <div>
-        <select
-            name="alertType"
-            style="padding: 10px;display: block;margin-bottom: 15px;width: 100%;background: inherit;color:inherit;border:1px solid;"
-        >
-            <option value="ema">Previous candle low above 5 EMA</option>
-        </select>
-
-        <label For="previousData">Previous candles EMA</label>
-        <input type="number" name="previousData" />
-        <br><br>
-        <label For="timeframe">Timeframe</label>
-        <input type="number" name="timeframe" />
-        <br><br>
-        <button
-            onclick="window.postMessage({
-                type: 'FROM_PAGE',
-                alert: {
-                    type: document.querySelector('#prokite-popup select').value,
-                    previousData: document.querySelector('#prokite-popup input[name=previousData]').value,
-                    timeframe: document.querySelector('#prokite-popup input[name=timeframe]').value
-                },
-                chartId: ${chartId}
-            })"
-            style="background:royalblue;"
-        >Create Alert</button>
-    </div>`;
-    showPopup('Create alert', html);
-}
-
-// listen to messages coming from webpage
-window.addEventListener("message", async (event) => {
-    // We only accept messages from ourselves
-    if (event.source != window) {
-        return;
-    }
-
-    if (event.data.type && (event.data.type == "FROM_PAGE") && event.data.alert) {
-        if (event.data.alert.type === 'ema') {
-            return alertEMA(event.data);
-        }
-    }
-}, false);
-
-function alertEMA(edata) {
-    setTimeout(async () => {
-        const result = await getCandles(edata.chartId, edata.alert.timeframe || 5)
-
-        if(result.data){
-            //calculate ema
-            console.log(result.data);
-            ema = (result.data.candles[result.data.candles.length - 2] * 0.333) + (edata.alert.previousData * 0.667);
-            console.log(ema);
-            console.log(result.data.candles[result.data.candles.length - 2]);
-
-            if(result.data.candles[result.data.candles.limit - 1] > ema){
-                
-                $$('#prokite-alert audio').play();
-            }
-        }
-        alertEMA(edata);
-    }, 60000);
 }

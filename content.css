@@ -48,5 +48,6 @@ div#prokite-popup header{
 
 div#prokite-popup div.content{
     padding: 15px 10px;
+    overflow-y: scroll;
 }
 

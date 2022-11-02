@@ -57,29 +57,31 @@ function off(event, e, func) {
 function simulateClick(id) {
     document.getElementById(id).click();
 }
-function ajaxHandler(path, method = 'GET', formdata = '', ajaxResultHandler) {
-    //log(path)
-    if ($('#spinner')) $('#spinner').style.visibility = 'visible';
-    const ajax = new XMLHttpRequest();
 
-    if (!ajax) {
-        log("unable to initiate ajax object!");
-        ajaxResultHandler(-1, -1);
-    }
-    ajax.onreadystatechange = function () {
-        if (this.readyState == 4) {
-            if (this.status == 200) {
-                //log(this.response)
-                ajaxResultHandler(this.response, 0);
-            } else {
-                ajaxResultHandler(-1, this.status);
+async function ajax(url, authToken, method = 'GET') {
+    try {
+        let response = await fetch(url, {
+            method: method,
+            headers: {
+                "Accept": "*/*",
+                "Authorization": "enctoken " + authToken
+            }
+        });
+
+        if(response.status == 200){
+            response = await response.text();
+            try {
+                return JSON.parse(response);
+            } catch (e) {
+                return response;
             }
         }
+        return false;
+    } catch (error) {
+        console.log(error.message);
     }
-    ajax.open(method, path);
-    ajax.send(formdata);
-
 }
+
 function kformater($number) {
     if (typeof ($number) !== 'number') {
         return -1;
@@ -99,6 +101,7 @@ function kformater($number) {
     }
     return $formated_num;
 }
+
 function addRow(data, tableId, rowAttributes, position = 0) {
     let newRow = '<tr ' + rowAttributes + '>';
     data.forEach(el => {
@@ -123,4 +126,8 @@ function parseUrlQuery(url) {
             query[split[0]] = split[1];
         });
     return query;
+}
+
+function hide(el){
+    el.style.display = 'none';
 }
